@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Welcome — Hearth</title>
+<link rel="stylesheet" href="css/app.css" />
+<style>
+  body { background: var(--bg); }
+
+  .welcome-shell {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 80px clamp(20px, 5vw, 56px) 80px;
+  }
+  @media (max-width: 720px) { .welcome-shell { padding: 48px 20px; } }
+
+  .w-brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 56px;
+  }
+  .w-brand .brand-mark { width: 32px; height: 32px; font-size: 16px; }
+  .w-brand .brand-name { font-size: 17px; }
+
+  .hero { margin-bottom: 56px; }
+  .hero .eyebrow {
+    font-size: 12px; font-weight: 600; color: var(--accent-ink);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1.12;
+    max-width: 20ch;
+  }
+  .hero p {
+    margin-top: 18px;
+    color: var(--muted);
+    max-width: 56ch;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  /* Three-step setup */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step.done { background: var(--bg); }
+  .step.current { background: var(--surface); }
+
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    color: var(--muted);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    border: 1px solid var(--border);
+  }
+  .step.current .step-num {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .step.done .step-num {
+    background: oklch(94% 0.04 155);
+    color: oklch(38% 0.10 155);
+    border-color: transparent;
+  }
+
+  .step-text h3 { font-size: 16px; margin-bottom: 4px; }
+  .step-text p { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+  .step.done .step-text h3 { color: var(--muted); }
+  .step.done .step-text p { color: var(--muted-2); }
+
+  /* Reassurance row */
+  .reassure {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 720px) { .reassure { grid-template-columns: 1fr; } }
+  .reassure-card {
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .reassure-card .r-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .reassure-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .reassure-card p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .skip {
+    margin-top: 28px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .skip a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<div class="welcome-shell">
+
+  <div class="w-brand">
+    <div class="brand-mark">H</div>
+    <div class="brand-name">Hearth</div>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">Welcome</div>
+    <h1>Let's set up Hearth for your family.</h1>
+    <p>
+      This takes about three minutes. Everything you set up stays on this
+      computer — Hearth doesn't send anything to a cloud, ever. You can change
+      any of this later.
+    </p>
+  </header>
+
+  <section class="steps">
+
+    <div class="step current">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <h3>Add a child</h3>
+        <p>Just a name and a rough age. You can add more later. Used to organize their devices and to suggest sensible defaults.</p>
+      </div>
+      <button class="btn btn-primary">Add a child</button>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <h3>Find their devices</h3>
+        <p>Hearth will look at the devices on your home network. You'll match each one to a child. We found <strong>4 devices</strong> already.</p>
+      </div>
+      <button class="btn" disabled style="opacity: 0.45;">Continue</button>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <h3>Set a starting policy</h3>
+        <p>Pick from a few simple defaults — "Young child", "Tween", "Teen" — or skip and set it yourself. You can adjust everything later.</p>
+      </div>
+      <button class="btn" disabled style="opacity: 0.45;">Continue</button>
+    </div>
+
+  </section>
+
+  <div class="reassure">
+    <div class="reassure-card">
+      <div class="r-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
+      </div>
+      <div>
+        <h4>Local-only</h4>
+        <p>Nothing is sent off this computer. No accounts, no cloud sync.</p>
+      </div>
+    </div>
+    <div class="reassure-card">
+      <div class="r-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l5 5L21 5"/></svg>
+      </div>
+      <div>
+        <h4>You can change anything</h4>
+        <p>Pause, delete history, or remove a child at any time.</p>
+      </div>
+    </div>
+    <div class="reassure-card">
+      <div class="r-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+      <div>
+        <h4>Skip ahead</h4>
+        <p>You can leave a step for later — Hearth will keep reminding you in the corner.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="skip"><a href="home.html">Take me to the empty dashboard →</a></p>
+
+</div>
+</body>
+</html>

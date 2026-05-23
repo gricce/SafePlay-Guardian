@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Schedule — Maya — Hearth</title>
+<link rel="stylesheet" href="css/app.css" />
+<style>
+  .breadcrumb {
+    font-size: 12.5px; color: var(--muted);
+    margin-bottom: 8px; display: flex; gap: 6px; align-items: center;
+  }
+  .breadcrumb a { color: var(--muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--fg); text-decoration: underline; }
+  .breadcrumb .sep { color: var(--muted-2); }
+
+  .sched-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .paint-group {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .paint-swatch {
+    border: none;
+    background: transparent;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .paint-swatch .chip {
+    width: 12px; height: 12px; border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .paint-swatch.active { background: var(--surface-2); color: var(--fg); }
+  .paint-swatch.active .chip { box-shadow: 0 0 0 2px var(--accent) inset; }
+
+  .chip.free       { background: oklch(94% 0.02 175); border-color: oklch(86% 0.04 175); }
+  .chip.blocked    { background: oklch(92% 0.012 240); border-color: oklch(82% 0.012 240); }
+  .chip.school     { background: oklch(94% 0.025 250); border-color: oklch(85% 0.04 250); }
+  .chip.bedtime    { background: oklch(88% 0.025 280); border-color: oklch(78% 0.04 280); }
+
+  .presets { display: flex; gap: 6px; margin-left: auto; }
+
+  /* Schedule grid */
+  .sched-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 16px 16px 20px;
+    overflow-x: auto;
+  }
+
+  .grid-week {
+    display: grid;
+    grid-template-columns: 60px repeat(24, minmax(28px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    user-select: none;
+    min-width: 760px;
+  }
+  .hh-head {
+    background: var(--surface-2);
+    padding: 6px 0;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  .hh-head.corner { background: var(--surface-2); }
+  .day-label {
+    background: var(--surface-2);
+    padding: 0 12px;
+    display: flex; align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .cell {
+    background: oklch(94% 0.02 175); /* free by default */
+    height: 32px;
+    cursor: cell;
+    transition: filter 0.1s;
+  }
+  .cell:hover { filter: brightness(0.97); }
+  .cell.s-blocked { background: oklch(92% 0.012 240); }
+  .cell.s-school  { background: oklch(94% 0.025 250); }
+  .cell.s-bedtime { background: oklch(88% 0.025 280); }
+
+  .sched-help {
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .sched-help .kbd-row { display: flex; gap: 4px; align-items: center; }
+
+  /* Summary */
+  .summary { margin-top: 24px; }
+  .summary-row {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .chip { width: 12px; height: 12px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 8px; border: 1px solid var(--border); }
+  .summary-row .num  { font-family: var(--font-mono); color: var(--muted); }
+
+  .save-bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 0;
+    margin-top: 32px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .save-bar .muted { font-size: 12.5px; margin-right: auto; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">H</div><div class="brand-name">Hearth</div></div>
+  <nav class="nav">
+    <a href="home.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2v-9z"/></svg>
+      Home
+    </a>
+    <a href="devices.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="10" rx="1.5"/><path d="M7 19h6M10 15v4"/><rect x="17" y="9" width="5" height="11" rx="1"/></svg>
+      Devices
+    </a>
+    <a href="reports.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>
+      Activity
+    </a>
+    <div class="nav-section">Family</div>
+    <a href="child.html?id=maya" class="active"><span class="avatar sm c1">M</span> Maya</a>
+    <a href="child.html?id=theo"><span class="avatar sm c2">T</span> Theo</a>
+    <a href="child.html?id=iris"><span class="avatar sm c3">I</span> Iris</a>
+  </nav>
+  <div class="sidebar-footer"><strong>Running on this PC</strong>Local-only · no cloud</div>
+</aside>
+
+<main class="main">
+  <div class="breadcrumb">
+    <a href="child.html?id=maya">Maya</a>
+    <span class="sep">/</span><span>Policy</span><span class="sep">/</span>
+    <span style="color: var(--fg);">Schedule</span>
+  </div>
+
+  <div class="page-head">
+    <div>
+      <h1>Weekly schedule</h1>
+      <p>Paint the week to set when screen time is allowed, blocked, or limited to specific apps. Click and drag across cells.</p>
+    </div>
+  </div>
+
+  <div class="sched-toolbar">
+    <div class="paint-group" role="radiogroup" aria-label="Paint mode">
+      <button class="paint-swatch active" data-mode="free"><span class="chip free"></span>Free time</button>
+      <button class="paint-swatch" data-mode="school"><span class="chip school"></span>School (homework only)</button>
+      <button class="paint-swatch" data-mode="blocked"><span class="chip blocked"></span>No screens</button>
+      <button class="paint-swatch" data-mode="bedtime"><span class="chip bedtime"></span>Bedtime</button>
+    </div>
+
+    <div class="presets">
+      <button class="btn btn-sm" id="presetSchool">Apply school-week preset</button>
+      <button class="btn btn-sm" id="clearAll">Clear all</button>
+    </div>
+  </div>
+
+  <section class="sched-wrap">
+    <div class="grid-week" id="grid">
+      <div class="hh-head corner"></div>
+      <!-- 24 hour headers, every 3 -->
+      <!-- We'll generate them with JS for accuracy -->
+    </div>
+    <div class="sched-help">
+      <div class="kbd-row"><span class="kbd">click</span><span>paint a single hour</span></div>
+      <div class="kbd-row"><span class="kbd">drag</span><span>paint a range</span></div>
+      <div class="kbd-row"><span class="kbd">shift</span><span> + click to erase to Free</span></div>
+    </div>
+  </section>
+
+  <section class="card summary">
+    <div class="card-head" style="margin-bottom: 4px;"><h3>In plain language</h3></div>
+    <div class="summary-row">
+      <span><span class="chip school"></span>School block</span>
+      <span>Weekdays 8:30 AM – 3:00 PM · only school sites + Khan Academy allowed</span>
+      <span class="num">32h 30m / wk</span>
+    </div>
+    <div class="summary-row">
+      <span><span class="chip blocked"></span>Reading time</span>
+      <span>Weekdays 4:00 PM – 5:00 PM · no screens</span>
+      <span class="num">5h / wk</span>
+    </div>
+    <div class="summary-row">
+      <span><span class="chip bedtime"></span>Bedtime</span>
+      <span>Every night 8:00 PM – 7:00 AM</span>
+      <span class="num">77h / wk</span>
+    </div>
+    <div class="summary-row">
+      <span><span class="chip free"></span>Free time</span>
+      <span>What's left, capped by the daily budget (2h on weekdays, 3h on weekends)</span>
+      <span class="num">53h 30m / wk</span>
+    </div>
+  </section>
+
+  <div class="save-bar">
+    <span class="muted">School block uses an allow-list of educational sites — edit it in <a href="#">Content</a>.</span>
+    <button class="btn">Discard</button>
+    <button class="btn btn-primary">Save schedule</button>
+  </div>
+</main>
+
+</div>
+
+<script>
+  const HOURS = 24;
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const grid = document.getElementById('grid');
+
+  // Build hour headers (label every 3 hours, dot otherwise — keep it clean)
+  for (let h = 0; h < HOURS; h++) {
+    const el = document.createElement('div');
+    el.className = 'hh-head';
+    if (h % 3 === 0) {
+      const hour12 = h === 0 ? '12a' : h < 12 ? `${h}a` : h === 12 ? '12p' : `${h-12}p`;
+      el.textContent = hour12;
+    } else {
+      el.textContent = '·';
+    }
+    grid.appendChild(el);
+  }
+
+  // Build day rows
+  let cells = []; // {el, day, hour, state}
+  DAYS.forEach((day, di) => {
+    const label = document.createElement('div');
+    label.className = 'day-label';
+    label.textContent = day;
+    grid.appendChild(label);
+
+    for (let h = 0; h < HOURS; h++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.day = di;
+      cell.dataset.hour = h;
+      cells.push({ el: cell, day: di, hour: h, state: 'free' });
+      grid.appendChild(cell);
+    }
+  });
+
+  // Apply default schedule (preview values matching the summary)
+  function setCell(c, state) {
+    c.el.classList.remove('s-blocked', 's-school', 's-bedtime');
+    if (state === 'blocked') c.el.classList.add('s-blocked');
+    else if (state === 'school') c.el.classList.add('s-school');
+    else if (state === 'bedtime') c.el.classList.add('s-bedtime');
+    c.state = state;
+  }
+
+  function applySchoolPreset() {
+    cells.forEach(c => setCell(c, 'free'));
+    cells.forEach(c => {
+      const isWeekday = c.day < 5;
+      // Bedtime: every night 8 PM – 7 AM (so hours 20-23 and 0-6 of every day)
+      if (c.hour >= 20 || c.hour < 7) setCell(c, 'bedtime');
+      // School block (weekdays 8 AM - 3 PM treated as full-hour 8-14)
+      if (isWeekday && c.hour >= 8 && c.hour < 15) setCell(c, 'school');
+      // Reading time (weekdays 4-5 PM)
+      if (isWeekday && c.hour === 16) setCell(c, 'blocked');
+    });
+  }
+  applySchoolPreset();
+
+  document.getElementById('presetSchool').addEventListener('click', applySchoolPreset);
+  document.getElementById('clearAll').addEventListener('click', () => cells.forEach(c => setCell(c, 'free')));
+
+  // Paint mode
+  let mode = 'free';
+  document.querySelectorAll('.paint-swatch').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.paint-swatch').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+    });
+  });
+
+  // Click & drag painting
+  let painting = false;
+  function paintCell(el, ev) {
+    const day = parseInt(el.dataset.day, 10);
+    const hour = parseInt(el.dataset.hour, 10);
+    const c = cells.find(x => x.day === day && x.hour === hour);
+    if (!c) return;
+    setCell(c, ev.shiftKey ? 'free' : mode);
+  }
+
+  grid.addEventListener('mousedown', (ev) => {
+    if (!ev.target.classList.contains('cell')) return;
+    painting = true;
+    paintCell(ev.target, ev);
+    ev.preventDefault();
+  });
+  grid.addEventListener('mouseover', (ev) => {
+    if (!painting) return;
+    if (!ev.target.classList.contains('cell')) return;
+    paintCell(ev.target, ev);
+  });
+  document.addEventListener('mouseup', () => { painting = false; });
+</script>
+</body>
+</html>

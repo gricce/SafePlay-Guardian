@@ -1,2 +1,11 @@
 CORE_PLATFORM.md
 AGENT.md
+
+# Build artifacts
+/dist/
+
+# Local runtime state
+/tmp-data/
+*.db
+*.db-wal
+*.db-shm

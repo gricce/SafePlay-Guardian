@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maya — Hearth</title>
+<link rel="stylesheet" href="css/app.css" />
+<style>
+  /* Child header */
+  .child-hero {
+    display: flex; gap: 20px; align-items: center;
+    margin-bottom: 32px;
+  }
+  .child-hero .avatar { width: 64px; height: 64px; font-size: 22px; }
+  .child-hero h1 { font-size: 28px; }
+  .child-hero .meta { color: var(--muted); font-size: 13.5px; display: flex; gap: 12px; margin-top: 4px; }
+  .child-hero .meta span:not(:last-child)::after { content: "·"; margin-left: 12px; color: var(--muted-2); }
+  .child-hero .actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* Two-column layout */
+  .child-cols {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  @media (max-width: 1100px) { .child-cols { grid-template-columns: 1fr; } }
+
+  /* Today block */
+  .today-card { padding: 24px; }
+  .today-card .row-top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .today-card h3 { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .today-card .big {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .today-card .big .of { color: var(--muted-2); font-weight: 500; font-size: 24px; }
+  .today-card .bar { height: 8px; margin-top: 6px; }
+  .today-card .bar-meta {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--muted);
+    margin-top: 8px;
+  }
+  .today-card .now {
+    margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .today-card .now-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent-ink);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .today-card .now-text strong { display: block; font-size: 13.5px; font-weight: 600; }
+  .today-card .now-text span { color: var(--muted); font-size: 12.5px; }
+
+  /* Devices list (compact) */
+  .dev-list { display: flex; flex-direction: column; }
+  .dev-row {
+    display: grid;
+    grid-template-columns: 36px 1fr auto auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .dev-row:last-child { border-bottom: none; }
+  .dev-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--surface-2); color: var(--muted);
+    display: grid; place-items: center;
+  }
+  .dev-name { font-size: 14px; font-weight: 600; }
+  .dev-sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .dev-actions { display: flex; gap: 6px; }
+  .control-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  .control-badge.full { background: var(--accent-soft); color: var(--accent-ink); }
+  .control-badge.net  { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Policy summary */
+  .policy-block {
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .policy-block:first-child { border-top: none; padding-top: 0; }
+  .policy-block .p-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding-top: 2px;
+  }
+  .policy-block .p-text { font-size: 14px; line-height: 1.5; }
+  .policy-block .p-text .em { color: var(--fg); font-weight: 500; }
+
+  /* Right column — quick facts */
+  .qf {
+    display: flex; flex-direction: column;
+    padding: 0;
+  }
+  .qf-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .qf-row:last-child { border-bottom: none; }
+  .qf-label { color: var(--muted); }
+  .qf-value { font-weight: 500; }
+
+  .mini-chart {
+    height: 64px;
+    display: flex; align-items: flex-end;
+    gap: 3px;
+    padding-top: 8px;
+  }
+  .mini-chart > div {
+    flex: 1;
+    background: var(--accent-soft);
+    border-radius: 2px;
+  }
+  .mini-chart > div.today { background: var(--accent); }
+  .mini-chart-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10.5px; color: var(--muted-2);
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">H</div><div class="brand-name">Hearth</div></div>
+  <nav class="nav">
+    <a href="home.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2v-9z"/></svg>
+      Home
+    </a>
+    <a href="devices.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="10" rx="1.5"/><path d="M7 19h6M10 15v4"/><rect x="17" y="9" width="5" height="11" rx="1"/></svg>
+      Devices
+    </a>
+    <a href="reports.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>
+      Activity
+    </a>
+    <div class="nav-section">Family</div>
+    <a href="child.html?id=maya" class="active"><span class="avatar sm c1">M</span> Maya</a>
+    <a href="child.html?id=theo"><span class="avatar sm c2">T</span> Theo</a>
+    <a href="child.html?id=iris"><span class="avatar sm c3">I</span> Iris</a>
+  </nav>
+  <div class="sidebar-footer"><strong>Running on this PC</strong>Local-only · no cloud</div>
+</aside>
+
+<main class="main">
+
+  <div class="child-hero">
+    <div class="avatar c1">M</div>
+    <div>
+      <h1>Maya</h1>
+      <div class="meta">
+        <span>9 years old</span>
+        <span>2 devices</span>
+        <span>Joined Sep 4, 2024</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn">Pause Maya's devices</button>
+      <button class="btn">Edit profile</button>
+    </div>
+  </div>
+
+  <div class="child-cols">
+
+    <!-- LEFT — main column -->
+    <div class="stack" style="--gap: 24px;">
+
+      <!-- Today's usage -->
+      <section class="card today-card">
+        <div class="row-top">
+          <h3>Today's screen time</h3>
+          <span class="pill ok"><span class="dot"></span> Within limits</span>
+        </div>
+        <div class="big num">1h 20m <span class="of">/ 2h</span></div>
+        <div class="bar"><span style="width: 66%"></span></div>
+        <div class="bar-meta">
+          <span>40 min remaining today</span>
+          <span>Resets at midnight</span>
+        </div>
+        <div class="now">
+          <div class="now-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <div class="now-text">
+            <strong>Reading time — no screens</strong>
+            <span>Schedule resumes free time at 5:00 PM</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Devices -->
+      <section class="card">
+        <div class="card-head">
+          <h3>Maya's devices</h3>
+          <a class="quick-link" href="devices.html">Manage all devices →</a>
+        </div>
+
+        <div class="dev-list">
+
+          <div class="dev-row">
+            <div class="dev-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M11 19h2"/></svg>
+            </div>
+            <div>
+              <div class="dev-name">Maya's iPad</div>
+              <div class="dev-sub">iPadOS 17 · in use now · joined Sep 12, 2024</div>
+            </div>
+            <span class="control-badge net">Network-only</span>
+            <div class="dev-actions">
+              <button class="btn btn-sm">Pause</button>
+            </div>
+          </div>
+
+          <div class="dev-row">
+            <div class="dev-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <div>
+              <div class="dev-name">Family TV <span class="muted" style="font-weight:400;font-size:12.5px">(shared)</span></div>
+              <div class="dev-sub">Roku · away · no agent installed</div>
+            </div>
+            <span class="control-badge net">Network-only</span>
+            <div class="dev-actions">
+              <button class="btn btn-sm">Pause</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="gap-note" style="margin-top: 18px;">
+          <svg class="gap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v0.1"/></svg>
+          <div>
+            <strong>Time limits don't apply to the Family TV.</strong><br>
+            We can block specific apps on the TV through the network, but we can't measure how long it's used. To enforce a time budget on the TV, an agent would need to be installed — that's not possible on Roku today. <a href="devices.html">See what's covered.</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Policy summary -->
+      <section class="card">
+        <div class="card-head">
+          <h3>Policy</h3>
+          <span class="muted" style="font-size:12.5px">Last edited 3 days ago</span>
+        </div>
+
+        <div class="policy-block">
+          <div class="p-label">Time budget</div>
+          <div class="p-text">
+            <span class="em">2 hours</span> on weekdays, <span class="em">3 hours</span> on weekends.
+            <span class="muted">No screens before 7 AM or after 8 PM.</span>
+          </div>
+          <a class="btn btn-sm" href="policy-time.html">Edit</a>
+        </div>
+
+        <div class="policy-block">
+          <div class="p-label">Schedule</div>
+          <div class="p-text">
+            <span class="em">School block</span> 8:30 AM – 3:00 PM (school sites still allowed).
+            <span class="em">Reading time</span> 4:00–5:00 PM.
+            <span class="em">Bedtime</span> 8:00 PM.
+          </div>
+          <a class="btn btn-sm" href="policy-schedule.html">Edit</a>
+        </div>
+
+        <div class="policy-block">
+          <div class="p-label">Content</div>
+          <div class="p-text">
+            Age-appropriate filter on. <span class="em">3 sites blocked</span>, <span class="em">12 allowed</span> for homework.
+          </div>
+          <a class="btn btn-sm" href="#">Edit</a>
+        </div>
+
+        <div class="policy-block">
+          <div class="p-label">Monitoring</div>
+          <div class="p-text">
+            <span class="em">Enforcement only</span> — we record when a block happens, not what was browsed.
+          </div>
+          <a class="btn btn-sm" href="policy-monitoring.html">Edit</a>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT — sidebar column -->
+    <aside class="stack" style="--gap: 24px;">
+
+      <section class="card qf">
+        <div class="qf-row">
+          <span class="qf-label">Current state</span>
+          <span class="qf-value">Reading time</span>
+        </div>
+        <div class="qf-row">
+          <span class="qf-label">Active devices</span>
+          <span class="qf-value">1 of 2</span>
+        </div>
+        <div class="qf-row">
+          <span class="qf-label">Blocks today</span>
+          <span class="qf-value num">2</span>
+        </div>
+        <div class="qf-row">
+          <span class="qf-label">Bedtime starts</span>
+          <span class="qf-value num">8:00 PM</span>
+        </div>
+        <div class="qf-row">
+          <span class="qf-label">Weekly average</span>
+          <span class="qf-value num">1h 47m</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h3>Last 7 days</h3></div>
+        <div class="mini-chart">
+          <div style="height: 30%"></div>
+          <div style="height: 55%"></div>
+          <div style="height: 42%"></div>
+          <div style="height: 70%"></div>
+          <div style="height: 60%"></div>
+          <div style="height: 80%"></div>
+          <div class="today" style="height: 45%"></div>
+        </div>
+        <div class="mini-chart-labels">
+          <span>W</span><span>T</span><span>F</span><span>S</span><span>S</span><span>M</span><span>T</span>
+        </div>
+        <a class="quick-link" href="reports.html" style="margin-top: 14px; display: inline-flex;">See full activity →</a>
+      </section>
+
+      <section class="card flat" style="background: var(--accent-soft); border: none;">
+        <h4 style="color: var(--accent-ink); margin-bottom: 6px;">A note from this morning</h4>
+        <p style="font-size: 13px; color: var(--accent-ink); line-height: 1.5;">
+          Maya tried to open a blocked site at 8:47 AM during school hours. The block worked — no further action needed.
+        </p>
+      </section>
+
+    </aside>
+
+  </div>
+
+</main>
+
+</div>
+</body>
+</html>

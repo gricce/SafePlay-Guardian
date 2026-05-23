@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign in — Hearth</title>
+<link rel="stylesheet" href="/css/app.css" />
+<style>
+  body { background: var(--bg); }
+  .auth-shell {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 96px clamp(20px, 5vw, 56px) 80px;
+  }
+  @media (max-width: 640px) { .auth-shell { padding: 48px 20px; } }
+  .a-brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 48px;
+  }
+  .a-brand .brand-mark { width: 480px; height: 480px; }
+  .a-brand .brand-name { font-size: 17px; }
+  .auth-hero h1 { font-size: clamp(26px, 3.6vw, 32px); margin-bottom: 8px; }
+  .auth-hero p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+  form.auth {
+    margin-top: 28px;
+    display: grid; gap: 12px;
+  }
+  form.auth label { font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+  form.auth input {
+    padding: 10px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    font-size: 14px;
+  }
+  form.auth input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  form.auth .btn-primary { margin-top: 8px; padding: 10px 18px; font-size: 14px; }
+  .auth-err {
+    color: oklch(38% 0.13 25);
+    background: oklch(96% 0.04 25);
+    border: 1px solid oklch(88% 0.06 25);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-top: 6px;
+    min-height: 0;
+  }
+  .auth-foot {
+    margin-top: 20px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+</style>
+  <link rel="icon" type="image/png" href="/img/logo.png" />
+</head>
+<body>
+<div class="auth-shell">
+  <div class="a-brand">
+    <div class="brand-mark"><img src="/img/logo.png" alt="" /></div>
+    </div>
+  <header class="auth-hero">
+    <h1>Welcome back.</h1>
+    <p>Sign in to manage your family's devices. The dashboard runs entirely on this computer.</p>
+  </header>
+  <form class="auth" id="login-form" autocomplete="on">
+    <label>
+      Parent username
+      <input name="username" autocomplete="username" required autofocus />
+    </label>
+    <label>
+      Password
+      <input name="password" type="password" autocomplete="current-password" required />
+    </label>
+    <div class="auth-err" id="login-err" hidden></div>
+    <button class="btn btn-primary" type="submit">Sign in</button>
+  </form>
+  <p class="auth-foot">Forgot the password? See the <code>auth_users</code> reset note in <code>INSTALL.md</code>.</p>
+</div>
+<script src="/js/app.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

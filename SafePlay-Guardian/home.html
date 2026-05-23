@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Family — Hearth</title>
+<link rel="stylesheet" href="css/app.css" />
+<style>
+  .greeting { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+
+  /* Child summary cards */
+  .child-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 1100px) { .child-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .child-grid { grid-template-columns: 1fr; } }
+
+  .child-card { padding: 22px; display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: inherit; transition: border-color 0.15s; }
+  .child-card:hover { text-decoration: none; border-color: var(--border-strong); }
+  .child-card .child-head { display: flex; align-items: center; gap: 14px; }
+  .child-card .child-meta { display: flex; flex-direction: column; gap: 2px; }
+  .child-card h3 { font-size: 18px; }
+  .child-card .child-meta .subtitle { font-size: 12.5px; color: var(--muted); }
+  .child-card .usage { display: flex; flex-direction: column; gap: 8px; }
+  .child-card .usage-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+  .child-card .usage-row .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; }
+  .child-card .usage-row .label { color: var(--muted); font-size: 12px; }
+  .child-card .device-strip {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .device-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px;
+    background: var(--surface-2);
+    border-radius: 7px;
+    font-size: 11.5px;
+    color: var(--muted);
+    border: 1px solid transparent;
+  }
+  .device-chip .ddot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
+  .device-chip.away .ddot { background: var(--muted-2); }
+  .device-chip.gap .ddot { background: var(--warn); }
+  .device-chip.paused .ddot { background: var(--info); }
+
+  /* Discovered section */
+  .discovered {
+    margin-top: 36px;
+  }
+  .discovered-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .discovered-head h2 { font-size: 16px; }
+  .discovered-head .muted { font-size: 12.5px; }
+
+  .discovered-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .discovered-list { grid-template-columns: 1fr; } }
+  .discovered-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-md);
+  }
+  .discovered-row .d-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    display: grid; place-items: center;
+    color: var(--muted);
+  }
+  .discovered-row .d-text { flex: 1; min-width: 0; }
+  .discovered-row .d-text strong { font-size: 14px; font-weight: 600; display: block; }
+  .discovered-row .d-text .sub {
+    color: var(--muted); font-size: 12px;
+    display: flex; gap: 8px; align-items: center; margin-top: 2px;
+  }
+  .discovered-row .d-text .sub .mac { font-family: var(--font-mono); }
+
+  /* Today summary strip */
+  .today {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 720px) { .today { grid-template-columns: 1fr 1fr; } }
+  .today > div {
+    background: var(--surface);
+    padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .today .label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .today .value { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .today .sub { font-size: 12px; color: var(--muted); }
+
+  .quick-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent-ink); font-size: 13px; font-weight: 500;
+    text-decoration: none;
+  }
+  .quick-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .quick-link svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">H</div>
+    <div class="brand-name">Hearth</div>
+  </div>
+  <nav class="nav">
+    <a href="home.html" class="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2v-9z"/></svg>
+      Home
+    </a>
+    <a href="devices.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="10" rx="1.5"/><path d="M7 19h6M10 15v4"/><rect x="17" y="9" width="5" height="11" rx="1"/></svg>
+      Devices
+    </a>
+    <a href="reports.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>
+      Activity
+    </a>
+    <div class="nav-section">Family</div>
+    <a href="child.html?id=maya"><span class="avatar sm c1">M</span> Maya</a>
+    <a href="child.html?id=theo"><span class="avatar sm c2">T</span> Theo</a>
+    <a href="child.html?id=iris"><span class="avatar sm c3">I</span> Iris</a>
+  </nav>
+  <div class="sidebar-footer">
+    <strong>Running on this PC</strong>
+    Local-only · no cloud
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-head">
+    <div>
+      <div class="greeting">Tuesday, May 22 · 4:18 PM</div>
+      <h1>How's the family doing?</h1>
+    </div>
+    <div class="page-actions">
+      <a class="btn" href="devices.html">Manage devices</a>
+      <a class="btn btn-primary" href="first-run.html">Add a child</a>
+    </div>
+  </div>
+
+  <section class="today" aria-label="Today at a glance">
+    <div>
+      <span class="label">Within limits</span>
+      <span class="value">3 of 3</span>
+      <span class="sub">everyone on track</span>
+    </div>
+    <div>
+      <span class="label">Active devices</span>
+      <span class="value">5</span>
+      <span class="sub">of 8 in the home</span>
+    </div>
+    <div>
+      <span class="label">Blocks today</span>
+      <span class="value">2</span>
+      <span class="sub">both during school hours</span>
+    </div>
+    <div>
+      <span class="label">Capability gaps</span>
+      <span class="value">1</span>
+      <span class="sub"><a class="quick-link" href="devices.html">Review</a></span>
+    </div>
+  </section>
+
+  <section class="child-grid">
+
+    <!-- Maya, 9 -->
+    <a class="child-card card" href="child.html?id=maya">
+      <div class="child-head">
+        <div class="avatar lg c1">M</div>
+        <div class="child-meta">
+          <h3>Maya</h3>
+          <span class="subtitle">9 years old · 2 devices</span>
+        </div>
+        <span style="margin-left:auto" class="pill ok"><span class="dot"></span> Within limits</span>
+      </div>
+      <div class="usage">
+        <div class="usage-row">
+          <span class="label">Screen time today</span>
+          <span class="num">1h 20m <span class="muted">/ 2h</span></span>
+        </div>
+        <div class="bar"><span style="width: 66%"></span></div>
+        <div class="usage-row">
+          <span class="label">Currently</span>
+          <span class="muted">Reading time (no screens) until 5:00 PM</span>
+        </div>
+      </div>
+      <div class="device-strip">
+        <span class="device-chip"><span class="ddot"></span>iPad</span>
+        <span class="device-chip gap" title="Network-only control"><span class="ddot"></span>Family TV</span>
+      </div>
+    </a>
+
+    <!-- Theo, 12 -->
+    <a class="child-card card" href="child.html?id=theo">
+      <div class="child-head">
+        <div class="avatar lg c2">T</div>
+        <div class="child-meta">
+          <h3>Theo</h3>
+          <span class="subtitle">12 years old · 3 devices</span>
+        </div>
+        <span style="margin-left:auto" class="pill ok"><span class="dot"></span> Within limits</span>
+      </div>
+      <div class="usage">
+        <div class="usage-row">
+          <span class="label">Screen time today</span>
+          <span class="num">2h 05m <span class="muted">/ 2h 30m</span></span>
+        </div>
+        <div class="bar"><span style="width: 83%"></span></div>
+        <div class="usage-row">
+          <span class="label">Currently</span>
+          <span class="muted">Homework window — Khan Academy + school sites allowed</span>
+        </div>
+      </div>
+      <div class="device-strip">
+        <span class="device-chip"><span class="ddot"></span>MacBook</span>
+        <span class="device-chip away"><span class="ddot"></span>Pixel phone <span style="opacity:0.7">· away</span></span>
+        <span class="device-chip"><span class="ddot"></span>Switch</span>
+      </div>
+    </a>
+
+    <!-- Iris, 15 -->
+    <a class="child-card card" href="child.html?id=iris">
+      <div class="child-head">
+        <div class="avatar lg c3">I</div>
+        <div class="child-meta">
+          <h3>Iris</h3>
+          <span class="subtitle">15 years old · 2 devices</span>
+        </div>
+        <span style="margin-left:auto" class="pill muted"><span class="dot"></span> No limit today</span>
+      </div>
+      <div class="usage">
+        <div class="usage-row">
+          <span class="label">Screen time today</span>
+          <span class="num">3h 40m <span class="muted">/ no cap</span></span>
+        </div>
+        <div class="bar muted"><span style="width: 50%"></span></div>
+        <div class="usage-row">
+          <span class="label">Currently</span>
+          <span class="muted">Free time · bedtime block starts 10:30 PM</span>
+        </div>
+      </div>
+      <div class="device-strip">
+        <span class="device-chip"><span class="ddot"></span>MacBook Air</span>
+        <span class="device-chip"><span class="ddot"></span>iPhone</span>
+      </div>
+    </a>
+
+  </section>
+
+  <section class="discovered">
+    <div class="discovered-head">
+      <h2>Devices waiting to be set up</h2>
+      <span class="muted">2 new on your home network</span>
+    </div>
+    <div class="discovered-list">
+
+      <div class="discovered-row">
+        <div class="d-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="d-text">
+          <strong>Living-room Roku</strong>
+          <div class="sub">First seen 11 min ago <span>·</span> <span class="mac">b8:27:eb:42:09:1c</span></div>
+        </div>
+        <button class="btn btn-sm btn-primary">Claim</button>
+      </div>
+
+      <div class="discovered-row">
+        <div class="d-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><circle cx="12" cy="18" r="0.8" fill="currentColor"/></svg>
+        </div>
+        <div class="d-text">
+          <strong>Unnamed Android phone</strong>
+          <div class="sub">First seen 1 hr ago <span>·</span> <span class="mac">f2:55:7a:18:bc:43</span></div>
+        </div>
+        <button class="btn btn-sm btn-primary">Claim</button>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Activity — Hearth</title>
+<link rel="stylesheet" href="/css/app.css" />
+<style>
+  .filters-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .child-tabs {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .child-tab {
+    border: none;
+    background: transparent;
+    padding: 6px 12px 6px 6px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .child-tab.active { background: var(--surface-2); color: var(--fg); }
+  .child-tab .avatar { width: 22px; height: 22px; font-size: 10px; }
+  .range-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    margin-left: auto;
+  }
+  .range-tab {
+    border: none; background: transparent;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .range-tab.active { background: var(--surface-2); color: var(--fg); }
+
+  /* Big chart */
+  .chart-card { padding: 24px 28px; }
+  .chart-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .chart-head h2 { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .chart-head .total {
+    font-family: var(--font-display);
+    font-size: 32px; font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-head .delta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .chart-head .delta strong { color: oklch(45% 0.08 155); font-weight: 600; }
+
+  .chart-area {
+    height: 220px;
+    margin-top: 20px;
+    position: relative;
+  }
+  .chart-area svg { width: 100%; height: 100%; display: block; }
+  .chart-grid {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .chart-grid > div {
+    border-top: 1px dashed var(--border);
+    position: relative;
+  }
+  .chart-grid > div::before {
+    content: attr(data-val);
+    position: absolute;
+    left: -36px; top: -7px;
+    font-size: 10.5px;
+    color: var(--muted-2);
+    font-family: var(--font-mono);
+  }
+  .chart-x {
+    margin-top: 8px;
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted-2);
+    font-family: var(--font-mono);
+    padding-left: 40px;
+  }
+
+  .legend-row {
+    display: flex; gap: 18px; margin-top: 6px;
+    font-size: 12px; color: var(--muted);
+    align-items: center;
+  }
+  .legend-row .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .legend-row .s-active { background: var(--accent); }
+  .legend-row .s-allow  { background: var(--accent-soft); }
+
+  /* Two-col below chart */
+  .below { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .below { grid-template-columns: 1fr; } }
+
+  /* Blocks list */
+  .blocks-list { display: flex; flex-direction: column; }
+  .block-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .block-row:last-child { border-bottom: none; }
+  .block-row .block-icon {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: var(--warn-soft);
+    color: oklch(50% 0.10 70);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .block-row .who { font-weight: 500; }
+  .block-row .who small { color: var(--muted); font-weight: 400; }
+  .block-row .what { color: var(--muted); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; }
+  .block-row .when { color: var(--muted); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Device usage */
+  .dev-stack { display: flex; flex-direction: column; gap: 14px; }
+  .dev-stack-row { display: grid; grid-template-columns: 120px 1fr auto; gap: 12px; align-items: center; font-size: 13px; }
+  .dev-stack-row .dev-label { font-weight: 500; }
+  .dev-stack-row .dev-bar {
+    height: 8px; background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .dev-stack-row .dev-bar > span {
+    display: block; height: 100%;
+    background: var(--accent);
+    border-radius: inherit;
+  }
+  .dev-stack-row .dev-val {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .retention-note {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--surface-2);
+    border-radius: var(--r-md);
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .retention-note svg { width: 16px; height: 16px; color: var(--accent-ink); flex-shrink: 0; }
+</style>
+  <link rel="icon" type="image/png" href="/img/logo.png" />
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark"><img src="/img/logo.png" alt="" /></div></div>
+  <nav class="nav">
+    <a href="/home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2v-9z"/></svg>
+      Home
+    </a>
+    <a href="/devices">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="10" rx="1.5"/><path d="M7 19h6M10 15v4"/><rect x="17" y="9" width="5" height="11" rx="1"/></svg>
+      Devices
+    </a>
+    <a href="/reports" class="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>
+      Activity
+    </a>
+    <div class="nav-section">Family</div>
+    <div data-fill="family-nav"></div>
+  </nav>
+  <div class="sidebar-footer"><strong>Running on this PC</strong>Local-only · no cloud</div>
+</aside>
+
+<main class="main">
+
+  <div class="page-head">
+    <div>
+      <h1>Activity</h1>
+      <p>Calm history of what's happened across the family's devices. No full browsing log — that's monitored differently and only when you opt in.</p>
+    </div>
+  </div>
+
+  <div class="filters-row">
+    <div class="child-tabs" data-fill="child-tabs"></div>
+    <div class="range-tabs">
+      <button class="range-tab" data-range="1">Today</button>
+      <button class="range-tab active" data-range="7">7 days</button>
+      <button class="range-tab" data-range="14">14 days</button>
+    </div>
+  </div>
+
+  <!-- Big chart -->
+  <section class="card chart-card" data-fill="chart-card">
+      <div class="muted" style="padding: 24px 28px;">Loading activity…</div>
+    </section>
+
+  <div class="below" style="margin-top: 16px;">
+
+    <!-- Blocks --><section class="card" data-fill="blocks-card">
+      <div class="muted">Loading blocks…</div>
+    </section>
+
+    <!-- Device activity --><section class="card" data-fill="by-device-card">
+      <div class="muted">Loading device usage…</div>
+    </section>
+  </div>
+
+  <div class="retention-note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    Activity older than about 2 weeks is automatically deleted. You can shorten that in <a href="/policy-monitoring">each child's monitoring settings</a>.
+  </div>
+
+</main>
+</div>
+<script src="/js/app.js"></script>
+<script src="/js/reports.js"></script>
+</body>
+</html>

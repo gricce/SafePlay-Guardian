@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Activity — Hearth</title>
+<link rel="stylesheet" href="css/app.css" />
+<style>
+  .filters-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .child-tabs {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .child-tab {
+    border: none;
+    background: transparent;
+    padding: 6px 12px 6px 6px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .child-tab.active { background: var(--surface-2); color: var(--fg); }
+  .child-tab .avatar { width: 22px; height: 22px; font-size: 10px; }
+  .range-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    margin-left: auto;
+  }
+  .range-tab {
+    border: none; background: transparent;
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .range-tab.active { background: var(--surface-2); color: var(--fg); }
+
+  /* Big chart */
+  .chart-card { padding: 24px 28px; }
+  .chart-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .chart-head h2 { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .chart-head .total {
+    font-family: var(--font-display);
+    font-size: 32px; font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-head .delta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .chart-head .delta strong { color: oklch(45% 0.08 155); font-weight: 600; }
+
+  .chart-area {
+    height: 220px;
+    margin-top: 20px;
+    position: relative;
+  }
+  .chart-area svg { width: 100%; height: 100%; display: block; }
+  .chart-grid {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .chart-grid > div {
+    border-top: 1px dashed var(--border);
+    position: relative;
+  }
+  .chart-grid > div::before {
+    content: attr(data-val);
+    position: absolute;
+    left: -36px; top: -7px;
+    font-size: 10.5px;
+    color: var(--muted-2);
+    font-family: var(--font-mono);
+  }
+  .chart-x {
+    margin-top: 8px;
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted-2);
+    font-family: var(--font-mono);
+    padding-left: 40px;
+  }
+
+  .legend-row {
+    display: flex; gap: 18px; margin-top: 6px;
+    font-size: 12px; color: var(--muted);
+    align-items: center;
+  }
+  .legend-row .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .legend-row .s-active { background: var(--accent); }
+  .legend-row .s-allow  { background: var(--accent-soft); }
+
+  /* Two-col below chart */
+  .below { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .below { grid-template-columns: 1fr; } }
+
+  /* Blocks list */
+  .blocks-list { display: flex; flex-direction: column; }
+  .block-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .block-row:last-child { border-bottom: none; }
+  .block-row .block-icon {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: var(--warn-soft);
+    color: oklch(50% 0.10 70);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .block-row .who { font-weight: 500; }
+  .block-row .who small { color: var(--muted); font-weight: 400; }
+  .block-row .what { color: var(--muted); font-family: var(--font-mono); font-size: 12px; margin-top: 2px; }
+  .block-row .when { color: var(--muted); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* Device usage */
+  .dev-stack { display: flex; flex-direction: column; gap: 14px; }
+  .dev-stack-row { display: grid; grid-template-columns: 120px 1fr auto; gap: 12px; align-items: center; font-size: 13px; }
+  .dev-stack-row .dev-label { font-weight: 500; }
+  .dev-stack-row .dev-bar {
+    height: 8px; background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .dev-stack-row .dev-bar > span {
+    display: block; height: 100%;
+    background: var(--accent);
+    border-radius: inherit;
+  }
+  .dev-stack-row .dev-val {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  .retention-note {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: var(--surface-2);
+    border-radius: var(--r-md);
+    font-size: 12.5px;
+    color: var(--muted);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .retention-note svg { width: 16px; height: 16px; color: var(--accent-ink); flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">H</div><div class="brand-name">Hearth</div></div>
+  <nav class="nav">
+    <a href="home.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2v-9z"/></svg>
+      Home
+    </a>
+    <a href="devices.html">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="10" rx="1.5"/><path d="M7 19h6M10 15v4"/><rect x="17" y="9" width="5" height="11" rx="1"/></svg>
+      Devices
+    </a>
+    <a href="reports.html" class="active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-6"/></svg>
+      Activity
+    </a>
+    <div class="nav-section">Family</div>
+    <a href="child.html?id=maya"><span class="avatar sm c1">M</span> Maya</a>
+    <a href="child.html?id=theo"><span class="avatar sm c2">T</span> Theo</a>
+    <a href="child.html?id=iris"><span class="avatar sm c3">I</span> Iris</a>
+  </nav>
+  <div class="sidebar-footer"><strong>Running on this PC</strong>Local-only · no cloud</div>
+</aside>
+
+<main class="main">
+
+  <div class="page-head">
+    <div>
+      <h1>Activity</h1>
+      <p>Calm history of what's happened across the family's devices. No full browsing log — that's monitored differently and only when you opt in.</p>
+    </div>
+  </div>
+
+  <div class="filters-row">
+    <div class="child-tabs">
+      <button class="child-tab active">All children</button>
+      <button class="child-tab"><span class="avatar sm c1">M</span>Maya</button>
+      <button class="child-tab"><span class="avatar sm c2">T</span>Theo</button>
+      <button class="child-tab"><span class="avatar sm c3">I</span>Iris</button>
+    </div>
+    <div class="range-tabs">
+      <button class="range-tab">Today</button>
+      <button class="range-tab active">7 days</button>
+      <button class="range-tab">14 days</button>
+    </div>
+  </div>
+
+  <!-- Big chart -->
+  <section class="card chart-card">
+    <div class="chart-head">
+      <div>
+        <h2>Total screen time</h2>
+        <div class="total num">14h 32m</div>
+        <div class="delta"><strong>↓ 1h 12m</strong> vs. previous 7 days</div>
+      </div>
+      <div class="legend-row">
+        <span><span class="swatch s-active"></span>Active time</span>
+        <span><span class="swatch s-allow"></span>Daily allowance</span>
+      </div>
+    </div>
+
+    <div class="chart-area">
+      <div class="chart-grid">
+        <div data-val="3h"></div>
+        <div data-val="2h"></div>
+        <div data-val="1h"></div>
+        <div data-val="0"></div>
+      </div>
+
+      <!-- SVG line chart - active vs allowance for last 7 days -->
+      <svg viewBox="0 0 700 220" preserveAspectRatio="none" style="padding-left: 40px;">
+        <!-- Allowance area (light) -->
+        <path d="M 0,73 L 100,73 L 100,73 L 200,73 L 200,73 L 300,73 L 300,73 L 400,73 L 400,73 L 500,0 L 500,0 L 600,0 L 600,73 L 700,73 L 700,220 L 0,220 Z"
+              fill="var(--accent-soft)" opacity="0.6"/>
+        <!-- Allowance line -->
+        <polyline points="0,73 100,73 200,73 300,73 400,73 500,0 600,0 700,73"
+                  fill="none" stroke="var(--accent-soft)" stroke-width="2" stroke-dasharray="4 4"/>
+        <!-- Active line -->
+        <polyline points="0,110 100,80 200,140 300,90 400,60 500,40 600,30 700,100"
+                  fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Active dots -->
+        <g fill="var(--accent)">
+          <circle cx="0" cy="110" r="4"/>
+          <circle cx="100" cy="80" r="4"/>
+          <circle cx="200" cy="140" r="4"/>
+          <circle cx="300" cy="90" r="4"/>
+          <circle cx="400" cy="60" r="4"/>
+          <circle cx="500" cy="40" r="4"/>
+          <circle cx="600" cy="30" r="4"/>
+          <circle cx="700" cy="100" r="5" stroke="var(--surface)" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
+    <div class="chart-x">
+      <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span><span>Mon</span><span>Today</span>
+    </div>
+  </section>
+
+  <div class="below" style="margin-top: 16px;">
+
+    <!-- Blocks -->
+    <section class="card">
+      <div class="card-head">
+        <h3>Recent blocks</h3>
+        <span class="muted" style="font-size:12.5px;">last 7 days</span>
+      </div>
+
+      <div class="blocks-list">
+        <div class="block-row">
+          <div class="block-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+          </div>
+          <div>
+            <div class="who"><span class="avatar sm c1" style="vertical-align:middle;margin-right:6px">M</span>Maya <small>· iPad</small></div>
+            <div class="what">roblox.com — outside daily budget</div>
+          </div>
+          <div class="when">Today, 2:14 PM</div>
+        </div>
+
+        <div class="block-row">
+          <div class="block-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+          </div>
+          <div>
+            <div class="who"><span class="avatar sm c1" style="vertical-align:middle;margin-right:6px">M</span>Maya <small>· iPad</small></div>
+            <div class="what">youtube.com — during school block</div>
+          </div>
+          <div class="when">Today, 8:47 AM</div>
+        </div>
+
+        <div class="block-row">
+          <div class="block-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+          </div>
+          <div>
+            <div class="who"><span class="avatar sm c2" style="vertical-align:middle;margin-right:6px">T</span>Theo <small>· MacBook</small></div>
+            <div class="what">discord.com — during homework window</div>
+          </div>
+          <div class="when">Mon, 5:23 PM</div>
+        </div>
+
+        <div class="block-row">
+          <div class="block-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+          </div>
+          <div>
+            <div class="who"><span class="avatar sm c1" style="vertical-align:middle;margin-right:6px">M</span>Maya <small>· iPad</small></div>
+            <div class="what">tiktok.com — category: social media</div>
+          </div>
+          <div class="when">Sun, 11:02 AM</div>
+        </div>
+
+        <div class="block-row">
+          <div class="block-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>
+          </div>
+          <div>
+            <div class="who"><span class="avatar sm c2" style="vertical-align:middle;margin-right:6px">T</span>Theo <small>· Switch</small></div>
+            <div class="what">Wi-Fi paused — past bedtime</div>
+          </div>
+          <div class="when">Sat, 10:12 PM</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Device activity -->
+    <section class="card">
+      <div class="card-head">
+        <h3>By device</h3>
+        <span class="muted" style="font-size:12.5px;">last 7 days · time online</span>
+      </div>
+
+      <div class="dev-stack">
+        <div class="dev-stack-row">
+          <div class="dev-label">Theo's MacBook</div>
+          <div class="dev-bar"><span style="width: 92%"></span></div>
+          <div class="dev-val">14h 20m</div>
+        </div>
+        <div class="dev-stack-row">
+          <div class="dev-label">Maya's iPad</div>
+          <div class="dev-bar"><span style="width: 64%"></span></div>
+          <div class="dev-val">9h 55m</div>
+        </div>
+        <div class="dev-stack-row">
+          <div class="dev-label">Iris's MacBook Air</div>
+          <div class="dev-bar"><span style="width: 80%"></span></div>
+          <div class="dev-val">12h 30m</div>
+        </div>
+        <div class="dev-stack-row">
+          <div class="dev-label">Iris's iPhone</div>
+          <div class="dev-bar"><span style="width: 22%"></span></div>
+          <div class="dev-val">3h 22m</div>
+        </div>
+        <div class="dev-stack-row">
+          <div class="dev-label">Switch</div>
+          <div class="dev-bar"><span style="width: 30%"></span></div>
+          <div class="dev-val">4h 40m</div>
+        </div>
+        <div class="dev-stack-row">
+          <div class="dev-label">Family TV</div>
+          <div class="dev-bar"><span style="width: 12%"></span></div>
+          <div class="dev-val muted">—</div>
+        </div>
+      </div>
+      <p class="muted" style="font-size: 12px; margin-top: 14px; line-height: 1.5;">
+        Family TV time isn't measured (network-only, no agent). The bar shows on/off-network presence only.
+      </p>
+    </section>
+  </div>
+
+  <div class="retention-note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    Activity older than about 2 weeks is automatically deleted. You can shorten that in <a href="policy-monitoring.html">each child's monitoring settings</a>.
+  </div>
+
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,87 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hearth — Family device manager (prototype)</title>
+<link rel="stylesheet" href="css/app.css" />
+<style>
+  .launcher { max-width: 1080px; margin: 0 auto; padding: 64px clamp(20px, 5vw, 56px) 80px; }
+  .launcher-hero { margin-bottom: 56px; }
+  .launcher-hero .eyebrow {
+    font-size: 12px; font-weight: 600; color: var(--accent-ink);
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .launcher-hero h1 { font-size: clamp(32px, 4vw, 44px); line-height: 1.1; max-width: 18ch; }
+  .launcher-hero p { color: var(--muted); margin-top: 16px; max-width: 60ch; font-size: 16px; }
+
+  .screen-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 720px) { .screen-grid { grid-template-columns: 1fr; } }
+
+  .screen-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .screen-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-2);
+    text-decoration: none;
+  }
+  .screen-card .num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted-2);
+    letter-spacing: 0.04em;
+  }
+  .screen-card h3 { font-size: 18px; }
+  .screen-card p { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  .screen-card .meta { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; font-size: 11.5px; }
+
+  .principles { margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--border); }
+  .principles h2 { font-size: 18px; margin-bottom: 20px; }
+  .principles-list { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
+  @media (max-width: 720px) { .principles-list { grid-template-columns: 1fr; } }
+  .principles-list li { list-style: none; padding-left: 18px; position: relative; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+  .principles-list li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .principles-list li strong { color: var(--fg); font-weight: 600; }
+</style>
+</head>
+<body>
+<main class="launcher">
+  <header class="launcher-hero">
+    <div class="eyebrow">Prototype overview</div>
+    <h1>A calm dashboard for the family's screen time.</h1>
+    <p>Hearth runs on the family PC. A parent opens this dashboard to see how their kids' devices are doing, set gentle limits, and stay honest about what each device can and can't enforce. Pick a screen to explore.</p>
+  </header>
+  <div class="screen-grid">
+    <a class="screen-card" href="home.html"><span class="num">01 · Overview</span><h3>Family home</h3><p>At-a-glance status for each child. Devices waiting to be claimed are kept clearly separate.</p><div class="meta"><span class="pill accent"><span class="dot"></span> Start here</span></div></a>
+    <a class="screen-card" href="child.html"><span class="num">02 · Person</span><h3>Child detail — Maya</h3><p>Devices, policy summary, today's usage. Capability gaps shown inline, not hidden.</p></a>
+    <a class="screen-card" href="devices.html"><span class="num">03 · Devices</span><h3>Devices</h3><p>All devices grouped by owner, plus newly discovered ones. Full-agent vs network-only is legible at a glance.</p></a>
+    <a class="screen-card" href="policy-time.html"><span class="num">04 · Policy</span><h3>Time budget</h3><p>A daily allowance with optional per-weekday breakdown. Plain numbers, no traffic-light dashboards.</p></a>
+    <a class="screen-card" href="policy-schedule.html"><span class="num">05 · Policy</span><h3>Schedule (weekly grid)</h3><p>Paint the week: school, bedtime, free time. Drag across cells, save presets.</p></a>
+    <a class="screen-card" href="policy-monitoring.html"><span class="num">06 · Policy</span><h3>Monitoring</h3><p>The single most important privacy choice. Enforcement-only is the visible default; detailed activity is an explicit opt-in.</p></a>
+    <a class="screen-card" href="reports.html"><span class="num">07 · Activity</span><h3>Reports</h3><p>Screen time over time, recent blocks, and a visible retention note. No creepy full browsing log.</p></a>
+    <a class="screen-card" href="first-run.html"><span class="num">08 · Empty state</span><h3>First open</h3><p>No children, no devices, no nagging. A gentle three-step welcome for the first five minutes.</p></a>
+  </div>
+  <section class="principles">
+    <h2>Principles applied across every screen</h2>
+    <ul class="principles-list">
+      <li><strong>Calm over dense.</strong> Lots of whitespace, restrained color, no red-alert dashboards.</li>
+      <li><strong>Honest about limits.</strong> When a protection can't be enforced on a device, the UI says so.</li>
+      <li><strong>Privacy is visible.</strong> Monitoring level is a first-class control, not buried in settings.</li>
+      <li><strong>Person-first.</strong> The family is people; devices belong to them, not the other way around.</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>
